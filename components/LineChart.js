@@ -4,6 +4,7 @@ import {
 	Area,
 	AreaChart,
 	CartesianGrid,
+	Legend,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -19,7 +20,9 @@ const CustomTooltip = ({ active, payload }) => {
 				{payload.map((p, idx) => {
 					return (
 						<div key={idx}>
-							<div>{prettyBalance(p.payload[p.dataKey], 0, 4)} N</div>
+							<div>
+								{p.dataKey} {prettyBalance(p.payload[p.dataKey], 0, 4)} N
+							</div>
 						</div>
 					)
 				})}
@@ -84,12 +87,34 @@ const LineChart = ({ data }) => {
 									return `${new Date(x).getDate()}`
 								}}
 							/>
+							<Legend />
 							<Tooltip content={<CustomTooltip />} />
 							<Area
 								type="monotone"
-								dataKey="volumeUsd"
+								stackId="a"
+								dataKey="primarySales"
 								dot={false}
 								stroke="#3389ff"
+								strokeWidth={2}
+								fillOpacity={1}
+								fill="url(#paint0_linear)"
+							/>
+							<Area
+								type="monotone"
+								stackId="a"
+								dataKey="secondarySales"
+								dot={false}
+								stroke="#9030ff"
+								strokeWidth={2}
+								fillOpacity={1}
+								fill="url(#paint0_linear)"
+							/>
+							<Area
+								type="monotone"
+								stackId="a"
+								dataKey="royalty"
+								dot={false}
+								stroke="#FF0000"
 								strokeWidth={2}
 								fillOpacity={1}
 								fill="url(#paint0_linear)"

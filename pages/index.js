@@ -4,45 +4,102 @@ import Layout from 'components/Layout'
 import Sidebar from 'components/Sidebar'
 import { OVERVIEW_DATA, BREAKDOWN_DATA, STATS_DATA, TOP_BUYERS, TOP_CARDS } from 'constants/dummy'
 import LineChart from 'components/LineChart'
+import axios from 'axios'
+import near from 'services/near'
+import { useNearProvider } from 'hooks/useNearProvider'
+import { formatNearAmount } from 'near-api-js/lib/utils/format'
 
 const title = 'Paras Analytics'
 const description =
 	'Check out the volume and transactions from Paras, a digital collectible marketplace that supports and develops crypto-native IPs.'
 const image = `https://paras-media.s3.ap-southeast-1.amazonaws.com/paras-analytics-thumbnail.jpg`
 
-const Loading = ({ isLoading }) => {
-	return (
-		<div
-			className={`transition-opacity duration-150 fixed inset-0 z-50 bg-gray-900 flex items-center justify-center ${
-				isLoading ? `opacity-100` : `opacity-0 z-[-1]`
-			}`}
-		>
-			<div>
-				<div className="animate-bounce">
-					<svg width="80" viewBox="0 0 600 713" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path
-							fillRule="evenodd"
-							clipRule="evenodd"
-							d="M95.2381 712.881L0 0L402.381 71.2881C419.486 75.7807 435.323 79.3925 449.906 82.7181C504.744 95.224 541.843 103.684 561.905 139.725C587.302 185.032 600 240.795 600 307.014C600 373.55 587.302 429.471 561.905 474.779C536.508 520.087 483.333 542.74 402.381 542.74H228.095L261.429 712.881H95.2381ZM147.619 147.329L364.777 185.407C374.008 187.807 382.555 189.736 390.426 191.513C420.02 198.193 440.042 202.712 450.869 221.963C464.575 246.164 471.428 275.95 471.428 311.321C471.428 346.861 464.575 376.731 450.869 400.932C437.163 425.133 408.466 437.234 364.777 437.234H265.578L205.798 432.481L147.619 147.329Z"
-							fill="white"
-						/>
-					</svg>
-				</div>
-			</div>
-		</div>
-	)
-}
-
 export default function Home() {
+	const [statsData, setStatsData] = useState({})
+	const [topBuyers, setTopBuyers] = useState([])
+	const [topCards, setTopCards] = useState([])
 	const [overviewData, setOverviewData] = useState([])
 	const [isLoading, setIsLoading] = useState(true)
+	const { isInit } = useNearProvider()
 
 	useEffect(() => {
-		fetchData()
-	}, [])
+		if (isInit) {
+			fetchData()
+		}
+	}, [isInit])
 
 	const fetchData = async () => {
-		setOverviewData(OVERVIEW_DATA)
+		try {
+			const resp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-stats`, {
+				params: {
+					account_id: 'misfits.tenk.near',
+				},
+				headers: {
+					authorization: await near.authToken(),
+				},
+			})
+			const buyersResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-buyers`, {
+				params: {
+					account_id: 'misfits.tenk.near',
+				},
+				headers: {
+					authorization: await near.authToken(),
+				},
+			})
+			const cardsResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-cards`, {
+				params: {
+					account_id: 'misfits.tenk.near',
+				},
+				headers: {
+					authorization: await near.authToken(),
+				},
+			})
+			console.log(resp.data.data)
+			console.log(buyersResp.data.data)
+			console.log(cardsResp.data.data)
+			setStatsData({
+				total_revenue: resp.data.data.total_revenue,
+				breakdown: [
+					{
+						title: 'Sales',
+						value: resp.data.data.total_sales,
+					},
+					{
+						title: 'Royalty',
+						value: resp.data.data.total_royalty,
+					},
+				],
+				overview: [
+					{
+						title: 'Total minted',
+						value: resp.data.data.minted,
+					},
+					{
+						title: 'Total series',
+						value: resp.data.data.token_series,
+					},
+					{
+						title: 'Total buyers',
+						value: buyersResp.data.data.total_buyers,
+					},
+				],
+			})
+			setTopBuyers(buyersResp.data.data.top_buyers)
+			setTopCards(cardsResp.data.data.top_cards)
+			const chartData = resp.data.data.primary_sale.map((d, idx) => {
+				return {
+					dateTs: d._id,
+					primarySales: formatNearAmount(d.volume),
+					primarySalesCount: d.count,
+					secondarySales: formatNearAmount(resp.data.data.secondary_sale[idx].volume),
+					secondarySalesCount: resp.data.data.secondary_sale[idx].count,
+					royalty: formatNearAmount(resp.data.data.secondary_sale[idx].royalty),
+				}
+			})
+			setOverviewData(chartData)
+		} catch (err) {
+			console.log(err)
+		}
 		setIsLoading(false)
 	}
 
@@ -61,7 +118,6 @@ export default function Home() {
 				<meta property="twitter:description" content={description} />
 				<meta property="twitter:image" content={image} />
 			</Head>
-			<Loading isLoading={isLoading} />
 
 			<div className="flex mx-auto min-h-screen">
 				<div
@@ -117,7 +173,9 @@ export default function Home() {
 									</div>
 									<div className="pl-4">
 										<p>Total Revenue</p>
-										<p className="text-3xl font-semibold">20,000 N</p>
+										<p className="text-3xl font-semibold">
+											{formatNearAmount(statsData.total_revenue)} Ⓝ
+										</p>
 									</div>
 								</div>
 							</div>
@@ -133,7 +191,7 @@ export default function Home() {
 									<p className="text-2xl font-semibold">Breakdown</p>
 									<p className="text-sm opacity-75">Last 30 days</p>
 								</div>
-								{BREAKDOWN_DATA.map((b, idx) => {
+								{statsData.breakdown?.map((b, idx) => {
 									return (
 										<div
 											key={idx}
@@ -157,7 +215,7 @@ export default function Home() {
 											</div>
 											<div className="pl-4">
 												<p>{b.title}</p>
-												<p className="text-lg font-semibold">{b.value}</p>
+												<p className="text-lg font-semibold">{formatNearAmount(b.value)} Ⓝ</p>
 											</div>
 										</div>
 									)
@@ -169,7 +227,7 @@ export default function Home() {
 									<p className="text-sm opacity-75">Last 30 days</p>
 								</div>
 								<div className="flex flex-wrap -mx-4 mt-4">
-									{STATS_DATA.map((s, idx) => {
+									{statsData.overview?.map((s, idx) => {
 										return (
 											<div key={idx} className="w-full md:w-1/3 p-4">
 												<div className="bg-gray-800 p-4 rounded-lg">
@@ -233,11 +291,11 @@ export default function Home() {
 									<p className="text-sm opacity-75">Last 30 days</p>
 								</div>
 								<div className="mt-4">
-									{TOP_BUYERS.map((u, idx) => {
+									{topBuyers.map((u, idx) => {
 										return (
 											<div key={idx} className="flex items-center">
-												<div className="w-2/3">{u.accountId}</div>
-												<div className="w-1/3 text-right">{u.volume}</div>
+												<div className="w-2/3">{u.account_id}</div>
+												<div className="w-1/3 text-right">{formatNearAmount(u.volume)} Ⓝ</div>
 											</div>
 										)
 									})}
@@ -249,11 +307,11 @@ export default function Home() {
 									<p className="text-sm opacity-75">Last 30 days</p>
 								</div>
 								<div className="mt-4">
-									{TOP_CARDS.map((u, idx) => {
+									{topCards.map((u, idx) => {
 										return (
 											<div key={idx} className="flex items-center">
-												<div className="w-2/3">{u.accountId}</div>
-												<div className="w-1/3 text-right">{u.volume}</div>
+												<div className="w-2/3">{u.token_detail[0].metadata.title}</div>
+												<div className="w-1/3 text-right">{formatNearAmount(u.volume)} Ⓝ</div>
 											</div>
 										)
 									})}
