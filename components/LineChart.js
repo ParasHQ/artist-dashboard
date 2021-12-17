@@ -1,5 +1,4 @@
 import dayjs from 'dayjs'
-import { formatNearAmount } from 'near-api-js/lib/utils/format'
 import { useEffect, useState } from 'react'
 import {
 	Area,
@@ -11,7 +10,7 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts'
-import { toHumanReadable } from 'utils/common'
+import { prettyBalance, toHumanReadable } from 'utils/common'
 
 const CustomTooltip = ({ active, payload }) => {
 	if (active && payload && payload.length) {
@@ -22,7 +21,7 @@ const CustomTooltip = ({ active, payload }) => {
 					return (
 						<div key={idx}>
 							<div>
-								{p.dataKey} {formatNearAmount(p.payload[p.dataKey], 2)} N
+								{p.dataKey} {prettyBalance(p.payload[p.dataKey], 0, 4)} N
 							</div>
 						</div>
 					)
@@ -56,7 +55,7 @@ const LineChart = ({ data }) => {
 	return (
 		<div>
 			{data.length > 0 && (
-				<div className="h-80">
+				<div className="h-60">
 					<ResponsiveContainer width="100%" height="100%">
 						<AreaChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
 							<defs>
@@ -74,7 +73,7 @@ const LineChart = ({ data }) => {
 								tickMargin={8}
 								stroke="rgba(255, 255, 255, 0.6)"
 								tickFormatter={(x) => {
-									return toHumanReadable(x / 10 ** 24)
+									return toHumanReadable(x)
 								}}
 							/>
 							<XAxis
@@ -88,20 +87,12 @@ const LineChart = ({ data }) => {
 									return `${new Date(x).getDate()}`
 								}}
 							/>
+							<Legend />
 							<Tooltip content={<CustomTooltip />} />
-							<Legend
-								wrapperStyle={{
-									position: 'relative',
-								}}
-								align="center"
-								formatter={(value) => {
-									return value[0].toUpperCase() + value.slice(1)
-								}}
-							/>
 							<Area
 								type="monotone"
-								stackId="1"
-								dataKey="volume"
+								stackId="a"
+								dataKey="primarySales"
 								dot={false}
 								stroke="#3389ff"
 								strokeWidth={2}
@@ -110,10 +101,20 @@ const LineChart = ({ data }) => {
 							/>
 							<Area
 								type="monotone"
-								stackId="2"
-								dataKey="revenue"
+								stackId="a"
+								dataKey="secondarySales"
 								dot={false}
 								stroke="#9030ff"
+								strokeWidth={2}
+								fillOpacity={1}
+								fill="url(#paint0_linear)"
+							/>
+							<Area
+								type="monotone"
+								stackId="a"
+								dataKey="royalty"
+								dot={false}
+								stroke="#FF0000"
 								strokeWidth={2}
 								fillOpacity={1}
 								fill="url(#paint0_linear)"

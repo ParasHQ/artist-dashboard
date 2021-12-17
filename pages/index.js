@@ -22,7 +22,7 @@ const TopBuyer = ({ data }) => {
 	const [userData, setUserData] = useState({})
 	useEffect(() => {
 		const getData = async () => {
-			const resp = await cachios.get(`${process.env.NEXT_PUBLIC_API_URL}/profiles`, {
+			const resp = await cachios.get(`https://api-v2-testnet.paras.id/profiles`, {
 				params: { accountId: data.account_id },
 			})
 			setUserData(resp.data.data.results[0])
@@ -61,7 +61,7 @@ export default function Home() {
 
 	const fetchData = async () => {
 		try {
-			const resp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-stats`, {
+			const resp = await axios.get(`https://api-v2-testnet.paras.id/artist-stats`, {
 				params: {
 					account_id: 'misfits.tenk.near',
 				},
@@ -91,7 +91,7 @@ export default function Home() {
 				}
 			})
 			setOverviewData(chartData)
-			const buyersResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-buyers`, {
+			const buyersResp = await axios.get(`https://api-v2-testnet.paras.id/artist-top-buyers`, {
 				params: {
 					account_id: 'misfits.tenk.near',
 				},
@@ -99,7 +99,7 @@ export default function Home() {
 					authorization: await near.authToken(),
 				},
 			})
-			const cardsResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-cards`, {
+			const cardsResp = await axios.get(`https://api-v2-testnet.paras.id/artist-top-cards`, {
 				params: {
 					account_id: 'misfits.tenk.near',
 					__skip: 0,
@@ -176,14 +176,14 @@ export default function Home() {
 						backgroundSize: 'cover',
 					}}
 				></div>
-				<div className="relative w-1/4">
+				<div className="hidden md:relative md:block w-1/4">
 					<Sidebar />
 				</div>
-				<div className="relative w-3/4 bg-gray-900 bg-opacity-50 p-6">
+				<div className="w-ful relative md:w-3/4 bg-gray-900 bg-opacity-50 p-6">
 					<div className="max-w-7xl mr-auto">
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-4xl">
+								<p className="text-xl md:text-4xl">
 									GM, <span className="font-bold">{near.currentUser?.accountId}</span>!
 								</p>
 							</div>
@@ -305,7 +305,7 @@ export default function Home() {
 									)
 								})}
 							</div>
-							<div className="w-full md:w-3/4 mt-6 px-8">
+							<div className="w-full md:w-3/4 mt-6 md:px-8">
 								<div>
 									<p className="text-2xl font-semibold">Statistics</p>
 									<p className="text-sm opacity-75">Last 30 days</p>

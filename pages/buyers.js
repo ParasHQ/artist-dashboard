@@ -52,7 +52,7 @@ const CardStats = () => {
 		}
 
 		setIsFetching(true)
-		const buyers = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-buyers`, {
+		const buyers = await axios.get(`https://api-v2-testnet.paras.id/artist-top-buyers`, {
 			params: {
 				account_id: 'misfits.tenk.near',
 				__skip: page * LIMIT,

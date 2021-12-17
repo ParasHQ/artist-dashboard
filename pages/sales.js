@@ -76,7 +76,7 @@ const Sales = () => {
 		}
 
 		setIsFetching(true)
-		const primary = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-primary-sales`, {
+		const primary = await axios.get(`https://api-v2-testnet.paras.id/artist-primary-sales`, {
 			params: {
 				account_id: 'misfits.tenk.near',
 				__skip: page * LIMIT,
@@ -102,7 +102,7 @@ const Sales = () => {
 
 		setIsFetching(true)
 
-		const secondary = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-secondary-sales`, {
+		const secondary = await axios.get(`https://api-v2-testnet.paras.id/artist-secondary-sales`, {
 			params: {
 				account_id: 'misfits.tenk.near',
 				__skip: page * LIMIT,
