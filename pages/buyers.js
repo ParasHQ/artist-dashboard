@@ -12,7 +12,7 @@ import { formatNearAmount } from 'near-api-js/lib/utils/format'
 import Logout from 'components/Logout'
 import { useNearProvider } from 'hooks/useNearProvider'
 
-const LIMTT_BUYERS = 30
+const LIMIT = 30
 const title = 'Paras Analytics - Top Buyers'
 const description =
 	'Check out the volume and transactions from Paras, a digital collectible marketplace that supports and develops crypto-native IPs.'
@@ -52,11 +52,11 @@ const CardStats = () => {
 		}
 
 		setIsFetching(true)
-		const buyers = await axios.get(`${process.env.V2_API_URL}/artist-top-buyers`, {
+		const buyers = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-buyers`, {
 			params: {
-				account_id: await near.currentUser?.accountId,
-				__skip: page * LIMTT_BUYERS,
-				__limit: LIMTT_BUYERS,
+				account_id: 'misfits.tenk.near',
+				__skip: page * LIMIT,
+				__limit: LIMIT,
 			},
 			headers: {
 				authorization: await near.authToken(),
@@ -66,7 +66,7 @@ const CardStats = () => {
 		const newBuyers = await buyers.data.data.top_buyers
 		setBuyersData(newBuyers)
 		setPage(page + 1)
-		if (newBuyers.length < LIMTT_BUYERS) {
+		if (newBuyers.length < LIMIT) {
 			setHasMore(false)
 		} else {
 			setHasMore(true)
@@ -171,12 +171,12 @@ const CardStats = () => {
 														</div>
 													</div>
 													<div
-														className={`${HEADERS[1].className} hidden md:flex md:text-sm lg:text-base font-bold justify-start`}
+														className={`${HEADERS[0].className} hidden md:flex md:text-sm lg:text-base font-bold justify-start`}
 													>
 														{formatNearAmount(sales.price ? sales.price : '0')} Ⓝ
 													</div>
 													<div
-														className={`${HEADERS[2].className} hidden md:flex md:text-sm lg:text-base justify-start`}
+														className={`${HEADERS[1].className} hidden md:flex md:text-sm lg:text-base justify-start`}
 													>
 														<Link href={`/${sales.from}`}>
 															<p className="font-thin border-b-2 border-transparent hover:border-gray-100 cursor-pointer">
@@ -185,7 +185,7 @@ const CardStats = () => {
 														</Link>{' '}
 													</div>
 													<div
-														className={`${HEADERS[3].className} hidden md:flex md:text-sm lg:text-base justify-start`}
+														className={`${HEADERS[2].className} hidden md:flex md:text-sm lg:text-base justify-start`}
 													>
 														<Link href={`/${sales.to}`}>
 															<p className="font-thin border-b-2 border-transparent hover:border-gray-100 cursor-pointer">

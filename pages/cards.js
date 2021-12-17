@@ -74,9 +74,9 @@ const CardStats = () => {
 		}
 
 		setIsFetching(true)
-		const cards = await axios.get(`${process.env.V2_API_URL}/artist-top-cards`, {
+		const cards = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-cards`, {
 			params: {
-				account_id: await near.currentUser?.accountId,
+				account_id: 'misfits.tenk.near',
 				__skip: page * LIMIT_CARDS,
 				__limit: LIMIT_CARDS,
 			},
@@ -159,7 +159,7 @@ const CardStats = () => {
 											<div className="flex flex-row items-center w-full cursor-pointer sm:cursor-default md:grid md:grid-cols-7 md:gap-5 lg:gap-10 md:h-19 md:hover:bg-gray-800">
 												<div className="flex md:col-span-2 items-center md:cursor-pointer">
 													<div className="w-1/4 bg-blue-900 rounded z-20">
-														{card?.data?.[0]?.metadata.media && (
+														{card?.token_detail.metadata.media && (
 															<Link href={`/token/${card.contract_id}::${card.token_series_id}`}>
 																<a>
 																	<img
@@ -173,12 +173,16 @@ const CardStats = () => {
 														)}
 													</div>
 													<div className="pl-4 overflow-hidden cursor-pointer">
-														<Link href={`/token/${card.contract_id}::${card.token_series_id}`}>
+														<Link
+															href={`/token/${card.token_detail.contract_id}::${card.token_detail.token_series_id}`}
+														>
 															<a className="font-semibold z-20">
-																{prettyTruncate(card?.data?.[0]?.metadata.title, 25)}
+																{prettyTruncate(card?.token_detail.metadata.title, 25)}
 															</a>
 														</Link>
-														<Link href={`/token/${card.contract_id}::${card.token_series_id}`}>
+														<Link
+															href={`/token/${card.token_detail.contract_id}::${card.token_detail.token_series_id}`}
+														>
 															<p className="w-min md:hidden font-semibold truncate z-20">
 																{formatNearAmount(card.price ? card.price : '0')} Ⓝ
 															</p>
@@ -188,7 +192,7 @@ const CardStats = () => {
 												<div
 													className={`${HEADERS[1].className} hidden md:flex md:text-sm lg:text-base font-bold justify-start`}
 												>
-													{formatNearAmount(card.price ? card.price : '0')} Ⓝ
+													{card.token_detail.copies || '1'}
 												</div>
 												<div
 													className={`${HEADERS[2].className} hidden md:flex md:text-sm lg:text-base justify-start`}

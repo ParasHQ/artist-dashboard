@@ -51,7 +51,7 @@ const Sales = () => {
 	const [primarySales, setPrimarySales] = useState([])
 	const [secondarySales, setSecondarySales] = useState([])
 	const [page, setPage] = useState(0)
-	const [hasMore, setHasMore] = useState(false)
+	const [hasMore, setHasMore] = useState(true)
 	const [isFetching, setIsFetching] = useState(false)
 	const { isInit } = useNearProvider()
 
@@ -59,6 +59,7 @@ const Sales = () => {
 
 	useEffect(() => {
 		if (isInit) {
+			console.log(isInit)
 			if (router.query.tab === 'secondary') {
 				console.log('Second')
 				getSecondarySales()
@@ -75,9 +76,9 @@ const Sales = () => {
 		}
 
 		setIsFetching(true)
-		const primary = await axios.get(`${process.env.V2_API_URL}/artist-primary-sales`, {
+		const primary = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-primary-sales`, {
 			params: {
-				account_id: await near.currentUser.accountId,
+				account_id: 'misfits.tenk.near',
 				__skip: page * LIMIT,
 				__limit: LIMIT,
 			},
@@ -95,17 +96,15 @@ const Sales = () => {
 	}
 
 	const getSecondarySales = async () => {
-		await near.init()
-
 		if (!hasMore || isFetching) {
 			return
 		}
 
 		setIsFetching(true)
 
-		const secondary = await axios.get(`${process.env.V2_API_URL}/artist-secondary-sales`, {
+		const secondary = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-secondary-sales`, {
 			params: {
-				account_id: await near.currentUser.accountId,
+				account_id: 'misfits.tenk.near',
 				__skip: page * LIMIT,
 				__limit: LIMIT,
 			},
@@ -240,7 +239,7 @@ const SaleItem = ({ data }) => {
 							<div className="flex flex-row items-center w-full cursor-pointer sm:cursor-default md:grid md:grid-cols-6 md:gap-5 lg:gap-10 md:h-19 md:hover:bg-gray-800">
 								<div className="flex md:col-span-2 items-center md:cursor-pointer">
 									<div className="w-1/4 bg-blue-900 rounded z-20">
-										{sales.token_detail.metadata.media && (
+										{sales.token_detail?.metadata?.media && (
 											<Link href={`/token/${sales.contract_id}::${sales.token_series_id}`}>
 												<a>
 													<img

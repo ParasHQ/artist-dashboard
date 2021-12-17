@@ -61,9 +61,9 @@ export default function Home() {
 
 	const fetchData = async () => {
 		try {
-			const resp = await axios.get(`${process.env.V2_API_URL}/artist-stats`, {
+			const resp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-stats`, {
 				params: {
-					account_id: 'testingdo.testnet',
+					account_id: 'misfits.tenk.near',
 				},
 				headers: {
 					authorization: await near.authToken(),
@@ -93,13 +93,13 @@ export default function Home() {
 			setOverviewData(chartData)
 			const buyersResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-buyers`, {
 				params: {
-					account_id: 'testingdo.testnet',
+					account_id: 'misfits.tenk.near',
 				},
 				headers: {
 					authorization: await near.authToken(),
 				},
 			})
-			const cardsResp = await axios.get(`${process.env.V2_API_URL}/artist-top-cards`, {
+			const cardsResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-cards`, {
 				params: {
 					account_id: 'misfits.tenk.near',
 					__skip: 0,
