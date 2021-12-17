@@ -12,6 +12,7 @@ import cachios from 'cachios'
 import Media from 'components/Media'
 import { parseImgUrl } from 'utils/common'
 import Logout from 'components/Logout'
+import Navbar from 'components/Navbar'
 
 const title = 'Paras Analytics'
 const description =
@@ -51,6 +52,7 @@ export default function Home() {
 	const [topCards, setTopCards] = useState([])
 	const [overviewData, setOverviewData] = useState([])
 	const [isLoading, setIsLoading] = useState(true)
+	const [showModal, setShowModal] = useState(false)
 	const { isInit } = useNearProvider()
 
 	useEffect(() => {
@@ -181,13 +183,45 @@ export default function Home() {
 				</div>
 				<div className="w-ful relative md:w-3/4 bg-gray-900 bg-opacity-50 p-6">
 					<div className="max-w-7xl mr-auto">
-						<div className="flex items-center justify-between">
-							<div>
+						<div
+							className={`sticky top-0 right-0 ${
+								showModal ? 'bg-black' : 'bg-transparent'
+							} flex items-center justify-between z-40 md:relative md:bg-transparent`}
+						>
+							<div className="p-4">
 								<p className="text-xl md:text-4xl">
 									GM, <span className="font-bold">{near.currentUser?.accountId}</span>!
 								</p>
 							</div>
-							<Logout />
+							<div className="p-4">
+								<div className="hidden md:block">
+									<Logout />
+								</div>
+								<div className="block md:hidden">
+									<button
+										onClick={() => {
+											showModal ? setShowModal(false) : setShowModal(true)
+										}}
+									>
+										<svg fill="currentColor" viewBox="0 0 20 20" className="w-6 h-6">
+											{showModal ? (
+												<path
+													fillRule="evenodd"
+													d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+													clipRule="evenodd"
+												></path>
+											) : (
+												<path
+													fillRule="evenodd"
+													d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z"
+													clipRule="evenodd"
+												></path>
+											)}
+										</svg>
+									</button>
+								</div>
+							</div>
+							{showModal && <Navbar />}
 						</div>
 						<div className="flex flex-wrap">
 							<div className="w-full md:w-1/4 mt-6">

@@ -1,10 +1,6 @@
-import { useRouter } from 'next/dist/client/router'
-import Logo from './Logo'
 import Link from 'next/link'
 
-const Navbar = ({ setIsOpen }) => {
-	const router = useRouter()
-
+const Navbar = () => {
 	return (
 		<div className="absolute z-30 w-full top-12">
 			<div className=" w-full bg-black top-10 rounded">
