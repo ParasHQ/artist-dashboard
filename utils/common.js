@@ -1,4 +1,9 @@
 import CID from 'cids'
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en'
+
+TimeAgo.addLocale(en)
+export const timeAgo = new TimeAgo('en-US')
 
 export const toHumanReadable = (val) => {
 	// known SI prefixes, multiple of 3
@@ -108,4 +113,16 @@ export const parseImgUrl = (url, defaultValue = '', opts = {}) => {
 			return url
 		}
 	}
+}
+
+export const prettyTruncate = (str = '', len = 8, type) => {
+	if (str.length > len) {
+		if (type === 'address') {
+			const front = Math.ceil(len / 2)
+			const back = str.length - (len - front)
+			return `${str.slice(0, front)}...${str.slice(back)}`
+		}
+		return `${str.slice(0, len)}...`
+	}
+	return str
 }

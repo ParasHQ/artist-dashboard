@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import Layout from 'components/Layout'
 import Sidebar from 'components/Sidebar'
-import { OVERVIEW_DATA, BREAKDOWN_DATA, STATS_DATA, TOP_BUYERS, TOP_CARDS } from 'constants/dummy'
 import LineChart from 'components/LineChart'
 import axios from 'axios'
 import near from 'services/near'
@@ -12,6 +11,7 @@ import JSBI from 'jsbi'
 import cachios from 'cachios'
 import Media from 'components/Media'
 import { parseImgUrl } from 'utils/common'
+import Logout from 'components/Logout'
 
 const title = 'Paras Analytics'
 const description =
@@ -61,9 +61,9 @@ export default function Home() {
 
 	const fetchData = async () => {
 		try {
-			const resp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-stats`, {
+			const resp = await axios.get(`${process.env.V2_API_URL}/artist-stats`, {
 				params: {
-					account_id: 'misfits.tenk.near',
+					account_id: 'testingdo.testnet',
 				},
 				headers: {
 					authorization: await near.authToken(),
@@ -93,13 +93,13 @@ export default function Home() {
 			setOverviewData(chartData)
 			const buyersResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-buyers`, {
 				params: {
-					account_id: 'misfits.tenk.near',
+					account_id: 'testingdo.testnet',
 				},
 				headers: {
 					authorization: await near.authToken(),
 				},
 			})
-			const cardsResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-cards`, {
+			const cardsResp = await axios.get(`${process.env.V2_API_URL}/artist-top-cards`, {
 				params: {
 					account_id: 'misfits.tenk.near',
 					__skip: 0,
@@ -184,10 +184,10 @@ export default function Home() {
 						<div className="flex items-center justify-between">
 							<div>
 								<p className="text-4xl">
-									GM, <span className="font-bold">hendri.near</span>!
+									GM, <span className="font-bold">{near.currentUser?.accountId}</span>!
 								</p>
 							</div>
-							<div>User/Login</div>
+							<Logout />
 						</div>
 						<div className="flex flex-wrap">
 							<div className="w-full md:w-1/4 mt-6">

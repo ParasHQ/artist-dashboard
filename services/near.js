@@ -98,11 +98,7 @@ class NearSvc {
 		}
 
 		const appTitle = 'Paras — Digital Art Cards Market'
-		this.wallet.requestSignIn(
-			'example-contract.testnet',
-			appTitle,
-			`${window.location.href}?successLogin=${new Date().getTime()}`
-		)
+		this.wallet.requestSignIn(process.env.MARKETPLACE_CONTRACT_ID, appTitle, process.env.BASE_URL)
 	}
 
 	logout() {
