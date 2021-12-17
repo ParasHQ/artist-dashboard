@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import Layout from 'components/Layout'
 import Sidebar from 'components/Sidebar'
-import { OVERVIEW_DATA, BREAKDOWN_DATA, STATS_DATA, TOP_BUYERS, TOP_CARDS } from 'constants/dummy'
 import LineChart from 'components/LineChart'
 import axios from 'axios'
 import near from 'services/near'
 import { useNearProvider } from 'hooks/useNearProvider'
 import { formatNearAmount } from 'near-api-js/lib/utils/format'
+import Logout from 'components/Logout'
 
 const title = 'Paras Analytics'
 const description =
@@ -30,33 +30,30 @@ export default function Home() {
 
 	const fetchData = async () => {
 		try {
-			const resp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-stats`, {
+			const resp = await axios.get(`${process.env.V2_API_URL}/artist-stats`, {
 				params: {
-					account_id: 'misfits.tenk.near',
+					account_id: 'testingdo.testnet',
 				},
 				headers: {
 					authorization: await near.authToken(),
 				},
 			})
-			const buyersResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-buyers`, {
+			const buyersResp = await axios.get(`${process.env.V2_API_URL}/artist-top-buyers`, {
 				params: {
-					account_id: 'misfits.tenk.near',
+					account_id: 'testingdo.testnet',
 				},
 				headers: {
 					authorization: await near.authToken(),
 				},
 			})
-			const cardsResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-cards`, {
+			const cardsResp = await axios.get(`${process.env.V2_API_URL}/artist-top-cards`, {
 				params: {
-					account_id: 'misfits.tenk.near',
+					account_id: 'testingdo.testnet',
 				},
 				headers: {
 					authorization: await near.authToken(),
 				},
 			})
-			console.log(resp.data.data)
-			console.log(buyersResp.data.data)
-			console.log(cardsResp.data.data)
 			setStatsData({
 				total_revenue: resp.data.data.total_revenue,
 				breakdown: [
@@ -137,10 +134,10 @@ export default function Home() {
 						<div className="flex items-center justify-between">
 							<div>
 								<p className="text-4xl">
-									GM, <span className="font-bold">hendri.near</span>!
+									GM, <span className="font-bold">{near.currentUser?.accountId}</span>!
 								</p>
 							</div>
-							<div>User/Login</div>
+							<Logout />
 						</div>
 						<div className="flex flex-wrap">
 							<div className="w-full md:w-1/4 mt-6">
