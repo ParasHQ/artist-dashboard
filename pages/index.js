@@ -8,11 +8,42 @@ import axios from 'axios'
 import near from 'services/near'
 import { useNearProvider } from 'hooks/useNearProvider'
 import { formatNearAmount } from 'near-api-js/lib/utils/format'
+import JSBI from 'jsbi'
+import cachios from 'cachios'
+import Media from 'components/Media'
+import { parseImgUrl } from 'utils/common'
 
 const title = 'Paras Analytics'
 const description =
 	'Check out the volume and transactions from Paras, a digital collectible marketplace that supports and develops crypto-native IPs.'
 const image = `https://paras-media.s3.ap-southeast-1.amazonaws.com/paras-analytics-thumbnail.jpg`
+
+const TopBuyer = ({ data }) => {
+	const [userData, setUserData] = useState({})
+	useEffect(() => {
+		const getData = async () => {
+			const resp = await cachios.get(`${process.env.NEXT_PUBLIC_API_URL}/profiles`, {
+				params: { accountId: data.account_id },
+			})
+			setUserData(resp.data.data.results[0])
+		}
+		if (data.account_id) {
+			getData()
+		}
+	}, [data])
+
+	return (
+		<div className="flex items-center mt-2">
+			<div className="w-8 h-8 rounded-full overflow-hidden bg-blue-900 border-gray-800 border">
+				<Media url={parseImgUrl(userData.imgUrl)} />
+			</div>
+			<div className="pl-2 flex-grow flex items-center">
+				<div className="w-2/3">{data.account_id}</div>
+				<div className="w-1/3 text-right">{formatNearAmount(data.volume, 2)} Ⓝ</div>
+			</div>
+		</div>
+	)
+}
 
 export default function Home() {
 	const [statsData, setStatsData] = useState({})
@@ -38,6 +69,28 @@ export default function Home() {
 					authorization: await near.authToken(),
 				},
 			})
+			const chartData = resp.data.data.primary_sales.map((d, idx) => {
+				const volume = JSBI.add(
+					JSBI.BigInt(d.total_volume),
+					JSBI.BigInt(resp.data.data.secondary_sales[idx].total_volume)
+				)
+				const revenue = JSBI.add(
+					JSBI.BigInt(d.net_volume),
+					JSBI.BigInt(resp.data.data.secondary_sales[idx].net_volume)
+				)
+				return {
+					dateTs: d.date,
+					volume: volume.toString(),
+					revenue: revenue.toString(),
+					primaryVolume: formatNearAmount(d.total_volume),
+					primaryNet: formatNearAmount(d.net_volume),
+					primarySales: d.total_sales,
+					secondaryVolume: formatNearAmount(resp.data.data.secondary_sales[idx].total_volume),
+					secondaryNet: formatNearAmount(resp.data.data.secondary_sales[idx].net_volume),
+					secondarySales: resp.data.data.secondary_sales[idx].total_sales,
+				}
+			})
+			setOverviewData(chartData)
 			const buyersResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-buyers`, {
 				params: {
 					account_id: 'misfits.tenk.near',
@@ -49,34 +102,39 @@ export default function Home() {
 			const cardsResp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-cards`, {
 				params: {
 					account_id: 'misfits.tenk.near',
+					__skip: 0,
+					__limit: 5,
 				},
 				headers: {
 					authorization: await near.authToken(),
 				},
 			})
-			console.log(resp.data.data)
-			console.log(buyersResp.data.data)
-			console.log(cardsResp.data.data)
+			// console.log(resp.data.data)
+			// console.log(buyersResp.data.data)
+			// console.log(cardsResp.data.data)
 			setStatsData({
-				total_revenue: resp.data.data.total_revenue,
+				total_volume: resp.data.data.total_volume,
+				total_revenue: resp.data.data.total_net,
 				breakdown: [
 					{
-						title: 'Sales',
-						value: resp.data.data.total_sales,
+						title: 'Primary Sales',
+						value: resp.data.data.primary_volume,
+						value2: resp.data.data.primary_net,
 					},
 					{
-						title: 'Royalty',
-						value: resp.data.data.total_royalty,
+						title: 'Secondary Sales',
+						value: resp.data.data.secondary_volume,
+						value2: resp.data.data.secondary_net,
 					},
 				],
 				overview: [
 					{
 						title: 'Total minted',
-						value: resp.data.data.minted,
+						value: resp.data.data.total_minted,
 					},
 					{
 						title: 'Total series',
-						value: resp.data.data.token_series,
+						value: resp.data.data.total_series,
 					},
 					{
 						title: 'Total buyers',
@@ -86,17 +144,6 @@ export default function Home() {
 			})
 			setTopBuyers(buyersResp.data.data.top_buyers)
 			setTopCards(cardsResp.data.data.top_cards)
-			const chartData = resp.data.data.primary_sale.map((d, idx) => {
-				return {
-					dateTs: d._id,
-					primarySales: formatNearAmount(d.volume),
-					primarySalesCount: d.count,
-					secondarySales: formatNearAmount(resp.data.data.secondary_sale[idx].volume),
-					secondarySalesCount: resp.data.data.secondary_sale[idx].count,
-					royalty: formatNearAmount(resp.data.data.secondary_sale[idx].royalty),
-				}
-			})
-			setOverviewData(chartData)
 		} catch (err) {
 			console.log(err)
 		}
@@ -172,9 +219,39 @@ export default function Home() {
 										</svg>
 									</div>
 									<div className="pl-4">
+										<p>Total Volume</p>
+										<p className="text-3xl font-semibold">
+											{formatNearAmount(statsData.total_volume, 2)} Ⓝ
+										</p>
+									</div>
+								</div>
+								<div
+									className="flex items-center rounded-lg p-4 mt-8"
+									style={{
+										backgroundColor: `#3389ff`,
+										backgroundImage: `linear-gradient(135deg, #3389ff 0%, #9030ff 30%, #FF0000 100%)`,
+									}}
+								>
+									<div className="w-12">
+										<svg
+											width="100%"
+											height="100%"
+											viewBox="0 0 24 24"
+											fill="none"
+											xmlns="http://www.w3.org/2000/svg"
+										>
+											<path
+												fillRule="evenodd"
+												clipRule="evenodd"
+												d="M1 12C1 18.0751 5.92487 23 12 23C18.0751 23 23 18.0751 23 12C23 5.92487 18.0751 1 12 1C5.92487 1 1 5.92487 1 12ZM21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM15 7C16.1046 7 17 7.89543 17 9V15C17 16.1046 16.1046 17 15 17H9C7.89543 17 7 16.1046 7 15V9C7 7.89543 7.89543 7 9 7H15ZM9 15V9H15V15H9Z"
+												fill="white"
+											/>
+										</svg>
+									</div>
+									<div className="pl-4">
 										<p>Total Revenue</p>
 										<p className="text-3xl font-semibold">
-											{formatNearAmount(statsData.total_revenue)} Ⓝ
+											{formatNearAmount(statsData.total_revenue, 2)} Ⓝ
 										</p>
 									</div>
 								</div>
@@ -215,7 +292,14 @@ export default function Home() {
 											</div>
 											<div className="pl-4">
 												<p>{b.title}</p>
-												<p className="text-lg font-semibold">{formatNearAmount(b.value)} Ⓝ</p>
+												<p className="text-lg font-semibold">
+													<span className="text-base">Volume:</span> {formatNearAmount(b.value, 2)}{' '}
+													Ⓝ
+												</p>
+												<p className="text-lg font-semibold">
+													<span className="text-base">Revenue:</span>{' '}
+													{formatNearAmount(b.value2, 2)} Ⓝ
+												</p>
 											</div>
 										</div>
 									)
@@ -292,12 +376,7 @@ export default function Home() {
 								</div>
 								<div className="mt-4">
 									{topBuyers.map((u, idx) => {
-										return (
-											<div key={idx} className="flex items-center">
-												<div className="w-2/3">{u.account_id}</div>
-												<div className="w-1/3 text-right">{formatNearAmount(u.volume)} Ⓝ</div>
-											</div>
-										)
+										return <TopBuyer key={idx} data={u} />
 									})}
 								</div>
 							</div>
@@ -310,7 +389,7 @@ export default function Home() {
 									{topCards.map((u, idx) => {
 										return (
 											<div key={idx} className="flex items-center">
-												<div className="w-2/3">{u.token_detail[0].metadata.title}</div>
+												<div className="w-2/3">{u.token_detail.metadata.title}</div>
 												<div className="w-1/3 text-right">{formatNearAmount(u.volume)} Ⓝ</div>
 											</div>
 										)

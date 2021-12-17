@@ -6,7 +6,7 @@ const Sidebar = () => {
 	const router = useRouter()
 
 	return (
-		<div className="min-h-screen w-full flex justify-end">
+		<div className="min-h-screen w-full flex justify-end sticky top-0">
 			<div className="text-white p-4 w-full max-w-sm">
 				<Link href="/">
 					<a className="block w-40 hover:opacity-75">
