@@ -10,6 +10,7 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import BuyerLoader from 'components/BuyerLoader'
 import { formatNearAmount } from 'near-api-js/lib/utils/format'
 import Logout from 'components/Logout'
+import { useNearProvider } from 'hooks/useNearProvider'
 
 const LIMTT_BUYERS = 30
 const title = 'Paras Analytics - Top Buyers'
@@ -39,14 +40,13 @@ const CardStats = () => {
 	const [page, setPage] = useState(0)
 	const [hasMore, setHasMore] = useState(true)
 	const [isFetching, setIsFetching] = useState(false)
+	const { isInit } = useNearProvider()
 
 	useEffect(() => {
-		getBuyers()
-	}, [])
+		if (isInit) getBuyers()
+	}, [isInit])
 
 	const getBuyers = async () => {
-		await near.init()
-
 		if (!hasMore || isFetching) {
 			return
 		}
