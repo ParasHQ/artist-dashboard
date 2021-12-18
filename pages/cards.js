@@ -90,7 +90,8 @@ const CardStats = () => {
 		})
 
 		const newCards = await cards.data.data.top_cards
-		setCardsData(newCards)
+		const newCardsData = [...cardsData, ...newCards]
+		setCardsData(newCardsData)
 		setPage(page + 1)
 		if (newCards.length < LIMIT_CARDS) {
 			setHasMore(false)
@@ -201,47 +202,59 @@ const CardStats = () => {
 												<div className="flex md:col-span-2 items-center md:cursor-pointer">
 													<div className="w-1/4 bg-blue-900 rounded z-20">
 														{card?.token_detail.metadata.media && (
-															<div className="w-full m-auto">
-																<Card
-																	imgUrl={parseImgUrl(card.token_detail.metadata.media, null, {
-																		width: `300`,
-																		useOriginal:
-																			process.env.APP_ENV === 'production' ? false : true,
-																	})}
-																	imgBlur={card.token_detail.metadata.blurhash}
-																	flippable={false}
-																	token={{
-																		title: card.token_detail.metadata.title,
-																		collection:
-																			card.token_detail.metadata.collection || card.contract_id,
-																		copies: card.token_detail.metadata.copies,
-																		creatorId:
-																			card.token_detail.metadata.creator_id || card.contract_id,
-																		description: card.token_detail.metadata.description,
-																		royalty: card.royalty || 0,
-																		attributes: card.token_detail.metadata.attributes,
-																	}}
-																/>
+															<div>
+																<div className="w-full m-auto hidden md:block">
+																	<Card
+																		imgUrl={parseImgUrl(card.token_detail.metadata.media, null, {
+																			width: `300`,
+																			useOriginal:
+																				process.env.APP_ENV === 'production' ? false : true,
+																		})}
+																		imgBlur={card.token_detail.metadata.blurhash}
+																		flippable={false}
+																		token={{
+																			title: card.token_detail.metadata.title,
+																			collection:
+																				card.token_detail.metadata.collection || card.contract_id,
+																			copies: card.token_detail.metadata.copies,
+																			creatorId:
+																				card.token_detail.metadata.creator_id || card.contract_id,
+																			description: card.token_detail.metadata.description,
+																			royalty: card.royalty || 0,
+																			attributes: card.token_detail.metadata.attributes,
+																		}}
+																	/>
+																</div>
+																<div className="block md:hidden">
+																	<img
+																		src={parseImgUrl(card.token_detail?.metadata.media, null, {
+																			width: `200`,
+																		})}
+																		className="bg-cover"
+																	/>
+																</div>
 															</div>
 														)}
 													</div>
 													<div className="pl-4 cursor-pointer">
 														<Link
-															href={`${process.env.MARKETPLACE_URL}/token/${card.token_detail.contract_id}::${card.token_detail.token_series_id}`}
+															href={`${process.env.NEXT_PUBLIC_MARKETPLACE_URL}/token/${card.token_detail.contract_id}::${card.token_detail.token_series_id}`}
 														>
 															<a className="text-xs md:text-lg font-semibold z-20">
 																{prettyTruncate(card?.token_detail.metadata.title, 25)}
 															</a>
 														</Link>
 														<p className="w-min md:hidden font-semibold truncate z-20">
-															{formatNearAmount(card.copies ? card.copies : '0')}
+															<p className="text-xs">
+																Total Sales : {card.total_sales ? card.total_sales : '0'}
+															</p>
 														</p>
 													</div>
 												</div>
 												<div
 													className={`${HEADERS[1].className} hidden md:flex md:text-sm lg:text-base font-bold justify-start`}
 												>
-													{card.token_detail.copies || '1'}
+													{card.token_detail.in_circulation || '1'}
 												</div>
 												<div
 													className={`${HEADERS[2].className} hidden md:flex md:text-sm lg:text-base justify-start`}
@@ -299,16 +312,8 @@ const CardStats = () => {
 												className="flex order-5 w-full justify-between items-center my-2 py-2 border-t-2 border-b-2 border-opacity-10 text-xs md:hidden"
 											>
 												<div className="flex flex-col flex-shrink text-center w-1/2">
-													<p className="font-thin text-white text-opacity-50 pb-2">Price</p>
-													<p className="font-bold cursor-pointer">
-														{formatNearAmount(card.price ? card.price : '0')} Ⓝ
-													</p>
-												</div>
-												<div className="flex flex-col flex-shrink text-center w-1/2">
-													<p className="font-thin text-white text-opacity-50 pb-2">Copies</p>
-													<p className="font-bold cursor-pointer">
-														{card.token_detail.copies || '1'}
-													</p>
+													<p className="font-thin text-white text-opacity-50 pb-2">Supply</p>
+													<p className="font-bold cursor-pointer">{card.in_circulation || '1'}</p>
 												</div>
 												<div className="flex flex-col flex-shrink text-center w-1/2">
 													<p className="font-thin text-white text-opacity-50 pb-2">First</p>

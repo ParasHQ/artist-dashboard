@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 const Navbar = () => {
 	return (
-		<div className="absolute z-30 w-full top-12">
+		<div className="absolute z-30 w-80 top-14 right-7">
 			<div className=" w-full bg-black top-10 rounded">
 				<Link href="/">
 					<a className=" p-4 flex items-center justify-center">

@@ -10,10 +10,10 @@ const CardLoader = (props) => (
 			uniqueKey="card-stat-loader"
 			{...props}
 		>
-			<rect x="50" y="0" rx="11" ry="11" width="200" height="150" />
-			<rect x="330" y="50" rx="11" ry="11" width="800" height="50" />
-			<rect x="50" y="200" rx="11" ry="11" width="200" height="150" />
-			<rect x="330" y="250" rx="11" ry="11" width="800" height="50" />
+			<rect x="0" y="50" rx="11" ry="11" width="100" height="100" />
+			<rect x="330" y="80" rx="11" ry="11" width="800" height="50" />
+			<rect x="0" y="200" rx="11" ry="11" width="100" height="500" />
+			<rect x="330" y="280" rx="11" ry="11" width="800" height="50" />
 		</ContentLoader>
 	</div>
 )
