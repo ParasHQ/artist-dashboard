@@ -3,6 +3,7 @@ import 'styles/global.css'
 import { NearProvider } from 'hooks/useNearProvider'
 import near from 'services/near'
 import { useEffect } from 'react'
+import { IntlProvider } from 'react-intl'
 
 function MyApp({ Component, pageProps }) {
 	useEffect(() => {
@@ -12,9 +13,11 @@ function MyApp({ Component, pageProps }) {
 	})
 
 	return (
-		<NearProvider>
-			<Component {...pageProps} />
-		</NearProvider>
+		<IntlProvider>
+			<NearProvider>
+				<Component {...pageProps} />
+			</NearProvider>
+		</IntlProvider>
 	)
 }
 

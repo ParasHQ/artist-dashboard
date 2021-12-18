@@ -13,17 +13,18 @@
 		"dayjs": "^1.10.7",
 		"fastq": "^1.13.0",
 		"file-type": "^17.0.2",
+		"javascript-time-ago": "^2.3.10",
 		"jsbi": "^3.2.5",
 		"magic-bytes.js": "^1.0.6",
 		"mongodb": "^4.1.2",
 		"near-api-js": "^0.44.1",
 		"next": "latest",
 		"react": "^17.0.2",
-		"react-dom": "^17.0.2",
-		"recharts": "^2.1.4",
-		"javascript-time-ago": "^2.3.10",
 		"react-content-loader": "^6.1.0",
-		"react-infinite-scroll-component": "^6.1.0"
+		"react-dom": "^17.0.2",
+		"react-infinite-scroll-component": "^6.1.0",
+		"react-intl": "^5.23.0",
+		"recharts": "^2.1.4"
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.2.6",
