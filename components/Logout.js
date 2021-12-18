@@ -3,7 +3,7 @@ import near from 'services/near'
 const Logout = () => {
 	const _signOut = async () => {
 		near.logout()
-		window.location.replace(`${process.env.BASE_URL}/login`)
+		window.location.replace(`${process.env.NEXT_PUBLIC_BASE_URL}/login`)
 	}
 
 	return (
