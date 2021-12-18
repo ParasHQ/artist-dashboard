@@ -23,7 +23,7 @@ const TopBuyer = ({ data }) => {
 	const [userData, setUserData] = useState({})
 	useEffect(() => {
 		const getData = async () => {
-			const resp = await cachios.get(`https://api-v2-testnet.paras.id/profiles`, {
+			const resp = await cachios.get(`${process.env.NEXT_PUBLIC_API_URL}/profiles`, {
 				params: { accountId: data.account_id },
 			})
 			setUserData(resp.data.data.results[0])
@@ -36,11 +36,25 @@ const TopBuyer = ({ data }) => {
 	return (
 		<div className="flex items-center mt-2">
 			<div className="w-8 h-8 rounded-full overflow-hidden bg-blue-900 border-gray-800 border">
-				<Media url={parseImgUrl(userData.imgUrl)} />
+				<Media url={parseImgUrl(userData?.imgUrl)} />
 			</div>
 			<div className="pl-2 flex-grow flex items-center">
 				<div className="w-2/3">{data.account_id}</div>
 				<div className="w-1/3 text-right">{formatNearAmount(data.volume, 2)} Ⓝ</div>
+			</div>
+		</div>
+	)
+}
+
+const TopCard = ({ data, idx }) => {
+	return (
+		<div className="flex items-center mt-2">
+			<div className="w-8 h-8 rounded-full overflow-hidden bg-blue-900 border-gray-800 border">
+				<Media url={parseImgUrl(data.token_detail.metadata?.media)} />
+			</div>
+			<div key={idx} className="pl-2 flex flex-grow items-center">
+				<div className="w-2/3">{data.token_detail.metadata.title}</div>
+				<div className="w-1/3 text-right">{formatNearAmount(data.volume)} Ⓝ</div>
 			</div>
 		</div>
 	)
@@ -71,7 +85,7 @@ export default function Home() {
 					authorization: await near.authToken(),
 				},
 			})
-			const chartData = resp.data.data.primary_sales.map((d, idx) => {
+			const chartData = await resp.data.data.primary_sales.map((d, idx) => {
 				const volume = JSBI.add(
 					JSBI.BigInt(d.total_volume),
 					JSBI.BigInt(resp.data.data.secondary_sales[idx].total_volume)
@@ -421,12 +435,7 @@ export default function Home() {
 								</div>
 								<div className="mt-4">
 									{topCards.map((u, idx) => {
-										return (
-											<div key={idx} className="flex items-center">
-												<div className="w-2/3">{u.token_detail.metadata.title}</div>
-												<div className="w-1/3 text-right">{formatNearAmount(u.volume)} Ⓝ</div>
-											</div>
-										)
+										return <TopCard key={idx} data={u} />
 									})}
 								</div>
 							</div>
