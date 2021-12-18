@@ -121,7 +121,8 @@ const CardStats = () => {
 		})
 
 		const newBuyers = await buyers.data.data.top_buyers
-		setBuyersData(newBuyers)
+		const newBuyersData = [...buyersData, ...newBuyers]
+		setBuyersData(newBuyersData)
 		setPage(page + 1)
 		if (newBuyers.length < LIMIT) {
 			setHasMore(false)
