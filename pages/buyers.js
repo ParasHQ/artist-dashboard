@@ -12,6 +12,8 @@ import { formatNearAmount } from 'near-api-js/lib/utils/format'
 import Logout from 'components/Logout'
 import { useNearProvider } from 'hooks/useNearProvider'
 import Navbar from 'components/Navbar'
+import cachios from 'cachios'
+import Media from 'components/Media'
 
 const LIMIT = 30
 const title = 'Paras Analytics - Top Buyers'
@@ -27,14 +29,67 @@ const HEADERS = [
 	{
 		id: 'volume',
 		title: 'Volume',
-		className: `flex items-center w-2/6 lg:w-full flex-shrink-1 p-2 h-full`,
+		className: `flex items-start md:items-center w-2/6 lg:w-full flex-shrink-1 p-2 h-full`,
 	},
 	{
 		id: 'transaction',
-		title: 'Total Transaction',
-		className: `flex items-center w-2/6 lg:w-1/3 flex-shrink-1 p-2 h-full`,
+		title: 'Transaction',
+		className: `flex items-start md:items-center w-2/6 lg:w-1/3 flex-shrink-1 p-2 h-full`,
 	},
 ]
+
+const Buyers = ({ data, key }) => {
+	const [userData, setUserData] = useState({})
+	useEffect(() => {
+		const getData = async () => {
+			const resp = await cachios.get(`${process.env.NEXT_PUBLIC_API_URL}/profiles`, {
+				params: { accountId: data.account_id },
+			})
+			setUserData(resp.data.data.results[0])
+		}
+		if (data.account_id) {
+			getData()
+		}
+	}, [data])
+
+	return (
+		<div key={key} className="py-3">
+			<div className="w-full">
+				<div className="flex flex-row items-center w-full cursor-pointer sm:cursor-default md:grid md:grid-cols-4 md:gap-5 lg:gap-10 md:h-19 md:hover:bg-gray-800">
+					<div
+						className={`${HEADERS[0].className} block col-span-2 md:flex md:text-sm lg:text-base font-bold justify-start`}
+					>
+						<Link href={`${process.env.MARKETPLACE_URL}/${data.account_id}`}>
+							<div className="flex items-center">
+								<div className="w-8 h-8 rounded-full overflow-hidden bg-blue-900 border-gray-800 border">
+									<Media url={parseImgUrl(userData?.imgUrl)} />
+								</div>
+								<a className="font-semibold pl-2 z-20">
+									<p className="block md:hidden font-semibold z-20">
+										{prettyTruncate(data.account_id, 8, 'address')}
+									</p>
+									<p className="hidden md:block font-semibold z-20">
+										{prettyTruncate(data.account_id, 20, 'address')}
+									</p>
+								</a>
+							</div>
+						</Link>
+					</div>
+					<div
+						className={`${HEADERS[0].className} block md:flex md:text-sm lg:text-base font-bold justify-start`}
+					>
+						{formatNearAmount(data.volume ? data.volume : '0')} Ⓝ
+					</div>
+					<div
+						className={`${HEADERS[0].className} block md:flex md:text-sm lg:text-base font-bold justify-start`}
+					>
+						{data.count} Tx
+					</div>
+				</div>
+			</div>
+		</div>
+	)
+}
 
 const CardStats = () => {
 	const [buyersData, setBuyersData] = useState([])
@@ -139,14 +194,14 @@ const CardStats = () => {
 					<div className="overflow-x-auto bg-black bg-opacity-25 w-full rounded-lg">
 						<div className="text-white bg-gray-800 rounded p-3">
 							<div className="block">
-								<div className="grid grid-cols-3 text-gray-300 hover:opacity-75 border-gray-600 border-b-2">
+								<div className="grid grid-cols-4 text-gray-300 hover:opacity-75 border-gray-600 border-b-2">
 									{HEADERS.map((d, index) => {
 										return (
 											<div
 												key={d.id}
 												className={`${
-													index === 0 && 'justify-start'
-												} flex items-center w-2/6 lg:w-full flex-shrink-0 p-3 h-full`}
+													index === 0 && 'col-span-2 justify-start'
+												} flex items-center w-2/6 lg:w-full flex-shrink-0 py-3 md:p-3 h-full`}
 											>
 												<span>{d.title}</span>
 											</div>
@@ -161,34 +216,8 @@ const CardStats = () => {
 								loader={<BuyerLoader />}
 								className="mt-4"
 							>
-								{buyersData.map((buyer) => {
-									return (
-										<div key={buyer._id} className="py-3">
-											<div className="w-full">
-												<div className="flex flex-row items-center w-full cursor-pointer sm:cursor-default md:grid md:grid-cols-3 md:gap-5 lg:gap-10 md:h-19 md:hover:bg-gray-800">
-													<div
-														className={`${HEADERS[0].className} block md:flex md:text-sm lg:text-base font-bold justify-start`}
-													>
-														<Link href={`${process.env.MARKETPLACE_URL}/${buyer.account_id}`}>
-															<a className="font-semibold z-20">
-																{prettyTruncate(buyer.account_id, 10, 'address')}
-															</a>
-														</Link>
-													</div>
-													<div
-														className={`${HEADERS[0].className} block md:flex md:text-sm lg:text-base font-bold justify-start`}
-													>
-														{formatNearAmount(buyer.volume ? buyer.volume : '0')} Ⓝ
-													</div>
-													<div
-														className={`${HEADERS[0].className} block md:flex md:text-sm lg:text-base font-bold justify-start`}
-													>
-														{buyer.count} Tx
-													</div>
-												</div>
-											</div>
-										</div>
-									)
+								{buyersData.map((buyer, idx) => {
+									return <Buyers key={idx} data={buyer} />
 								})}
 							</InfiniteScroll>
 						</div>
