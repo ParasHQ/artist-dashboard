@@ -11,6 +11,8 @@ import CardLoader from 'components/CardLoader'
 import { parseImgUrl, prettyTruncate } from 'utils/common'
 import { formatNearAmount } from 'near-api-js/lib/utils/format'
 import { useNearProvider } from 'hooks/useNearProvider'
+import Navbar from 'components/Navbar'
+import Card from 'components/Card'
 
 const LIMIT_CARDS = 30
 const title = 'Paras Analytics'
@@ -60,6 +62,8 @@ const CardStats = () => {
 	const [page, setPage] = useState(0)
 	const [hasMore, setHasMore] = useState(true)
 	const [isFetching, setIsFetching] = useState(false)
+	const [showModal, setShowModal] = useState(false)
+	const [showDetailActivity, setShowDetailActivity] = useState(-1)
 	const { isInit } = useNearProvider()
 
 	useEffect(() => {
@@ -74,7 +78,7 @@ const CardStats = () => {
 		}
 
 		setIsFetching(true)
-		const cards = await axios.get(`https://api-v2-testnet.paras.id/artist-top-cards`, {
+		const cards = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artist-top-cards`, {
 			params: {
 				account_id: 'misfits.tenk.near',
 				__skip: page * LIMIT_CARDS,
@@ -95,6 +99,12 @@ const CardStats = () => {
 		}
 		setIsFetching(false)
 	}
+
+	const showDetail = (index) => {
+		if (showDetailActivity == index) setShowDetailActivity(-1)
+		else setShowDetailActivity(index)
+	}
+
 	return (
 		<Layout>
 			<Head>
@@ -120,13 +130,41 @@ const CardStats = () => {
 						backgroundSize: 'cover',
 					}}
 				></div>
-				<div className="relative w-1/4">
+				<div className="hidden md:block md:relative w-1/4">
 					<Sidebar />
 				</div>
-				<div className="relative w-3/4 bg-gray-900 bg-opacity-50 p-6">
+				<div className="w-full relative md:w-3/4 bg-gray-900 bg-opacity-50 p-6">
 					<div className="flex flex-1 items-center justify-between mb-10">
 						<h4 className="text-4xl font-bold">Top Cards</h4>
-						<Logout />
+						<div>
+							<div className="hidden md:block">
+								<Logout />
+							</div>
+							<div className="block md:hidden">
+								<button
+									onClick={() => {
+										showModal ? setShowModal(false) : setShowModal(true)
+									}}
+								>
+									<svg fill="currentColor" viewBox="0 0 20 20" className="w-6 h-6">
+										{showModal ? (
+											<path
+												fillRule="evenodd"
+												d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+												clipRule="evenodd"
+											></path>
+										) : (
+											<path
+												fillRule="evenodd"
+												d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z"
+												clipRule="evenodd"
+											></path>
+										)}
+									</svg>
+								</button>
+							</div>
+						</div>
+						{showModal && <Navbar />}
 					</div>
 					<div className="text-white bg-gray-800 rounded p-3">
 						<div className="hidden md:block">
@@ -152,41 +190,52 @@ const CardStats = () => {
 							loader={<CardLoader />}
 							className="mt-4"
 						>
-							{cardsData.map((card) => {
+							{cardsData.map((card, index) => {
 								return (
 									<div key={card._id} className="py-3">
 										<div className="w-full">
-											<div className="flex flex-row items-center w-full cursor-pointer sm:cursor-default md:grid md:grid-cols-7 md:gap-5 lg:gap-10 md:h-19 md:hover:bg-gray-800">
+											<div
+												className="flex flex-row items-center w-full cursor-pointer sm:cursor-default md:grid md:grid-cols-8 md:gap-3 md:h-19 md:hover:bg-gray-800"
+												onClick={() => showDetail(index)}
+											>
 												<div className="flex md:col-span-2 items-center md:cursor-pointer">
 													<div className="w-1/4 bg-blue-900 rounded z-20">
 														{card?.token_detail.metadata.media && (
-															<Link href={`/token/${card.contract_id}::${card.token_series_id}`}>
-																<a>
-																	<img
-																		src={parseImgUrl(card.media, null, {
-																			width: `200`,
-																		})}
-																		className="bg-cover"
-																	/>
-																</a>
-															</Link>
+															<div className="w-full m-auto">
+																<Card
+																	imgUrl={parseImgUrl(card.token_detail.metadata.media, null, {
+																		width: `300`,
+																		useOriginal:
+																			process.env.APP_ENV === 'production' ? false : true,
+																	})}
+																	imgBlur={card.token_detail.metadata.blurhash}
+																	flippable={false}
+																	token={{
+																		title: card.token_detail.metadata.title,
+																		collection:
+																			card.token_detail.metadata.collection || card.contract_id,
+																		copies: card.token_detail.metadata.copies,
+																		creatorId:
+																			card.token_detail.metadata.creator_id || card.contract_id,
+																		description: card.token_detail.metadata.description,
+																		royalty: card.royalty || 0,
+																		attributes: card.token_detail.metadata.attributes,
+																	}}
+																/>
+															</div>
 														)}
 													</div>
-													<div className="pl-4 overflow-hidden cursor-pointer">
+													<div className="pl-4 cursor-pointer">
 														<Link
-															href={`/token/${card.token_detail.contract_id}::${card.token_detail.token_series_id}`}
+															href={`${process.env.MARKETPLACE_URL}/token/${card.token_detail.contract_id}::${card.token_detail.token_series_id}`}
 														>
-															<a className="font-semibold z-20">
+															<a className="text-xs md:text-lg font-semibold z-20">
 																{prettyTruncate(card?.token_detail.metadata.title, 25)}
 															</a>
 														</Link>
-														<Link
-															href={`/token/${card.token_detail.contract_id}::${card.token_detail.token_series_id}`}
-														>
-															<p className="w-min md:hidden font-semibold truncate z-20">
-																{formatNearAmount(card.price ? card.price : '0')} Ⓝ
-															</p>
-														</Link>
+														<p className="w-min md:hidden font-semibold truncate z-20">
+															{formatNearAmount(card.copies ? card.copies : '0')}
+														</p>
 													</div>
 												</div>
 												<div
@@ -197,23 +246,100 @@ const CardStats = () => {
 												<div
 													className={`${HEADERS[2].className} hidden md:flex md:text-sm lg:text-base justify-start`}
 												>
-													<Link href={`/${card.from}`}>
-														<p className="font-thin border-b-2 border-transparent hover:border-gray-100 cursor-pointer">
-															{card.from && prettyTruncate(card.from, 12, 'address')}
-														</p>
-													</Link>{' '}
+													<p className="font-thin">
+														{formatNearAmount(card.first_sale ? card.first_sale : '0')} Ⓝ
+													</p>
 												</div>
 												<div
-													className={`${HEADERS[3].className} hidden md:flex md:text-sm lg:text-base justify-start`}
+													className={`${HEADERS[2].className} hidden md:flex md:text-sm lg:text-base justify-start`}
 												>
-													<Link href={`/${card.to}`}>
-														<p className="font-thin border-b-2 border-transparent hover:border-gray-100 cursor-pointer">
-															{card.to && prettyTruncate(card.to, 12, 'address')}
-														</p>
-													</Link>
+													<p className="font-thin">
+														{formatNearAmount(card.last_sale ? card.last_sale : '0')} Ⓝ
+													</p>
+												</div>
+												<div
+													className={`${HEADERS[2].className} hidden md:flex md:text-sm lg:text-base justify-start`}
+												>
+													<p className="font-thin truncate">
+														{formatNearAmount(card.avg_price ? card.avg_price.split('.')[0] : '0')}{' '}
+														Ⓝ
+													</p>
+												</div>
+												<div
+													className={`${HEADERS[2].className} hidden md:flex md:text-sm lg:text-base justify-start`}
+												>
+													<p className="font-thin">{card.total_sales}</p>
+												</div>
+												<div
+													className={`${HEADERS[2].className} hidden md:flex md:text-sm lg:text-base justify-start`}
+												>
+													<p className="font-thin">
+														{formatNearAmount(card.volume ? card.volume : '0')} Ⓝ
+													</p>
+												</div>
+												<div className="relative top-1 right-4 flex flex-grow justify-end md:hidden">
+													<svg
+														width="10"
+														height="10"
+														viewBox="0 0 21 19"
+														fill="none"
+														xmlns="http://www.w3.org/2000/svg"
+													>
+														<path
+															d="M20.7846 0.392303L10.3923 18.3923L0 0.392304L20.7846 0.392303Z"
+															fill="white"
+														/>
+													</svg>
 												</div>
 											</div>
 										</div>
+										{showDetailActivity == index && (
+											<div
+												key={card._id}
+												className="flex order-5 w-full justify-between items-center my-2 py-2 border-t-2 border-b-2 border-opacity-10 text-xs md:hidden"
+											>
+												<div className="flex flex-col flex-shrink text-center w-1/2">
+													<p className="font-thin text-white text-opacity-50 pb-2">Price</p>
+													<p className="font-bold cursor-pointer">
+														{formatNearAmount(card.price ? card.price : '0')} Ⓝ
+													</p>
+												</div>
+												<div className="flex flex-col flex-shrink text-center w-1/2">
+													<p className="font-thin text-white text-opacity-50 pb-2">Copies</p>
+													<p className="font-bold cursor-pointer">
+														{card.token_detail.copies || '1'}
+													</p>
+												</div>
+												<div className="flex flex-col flex-shrink text-center w-1/2">
+													<p className="font-thin text-white text-opacity-50 pb-2">First</p>
+													<p className="font-bold cursor-pointer">
+														{formatNearAmount(card.first_sale ? card.first_sale : '0')} Ⓝ
+													</p>
+												</div>
+												<div className="flex flex-col flex-shrink text-center w-1/2">
+													<p className="font-thin text-white text-opacity-50 pb-2">Last</p>
+													<p className="font-bold cursor-pointer">
+														{formatNearAmount(card.last_sale ? card.last_sale : '0')} Ⓝ
+													</p>
+												</div>
+												<div className="flex flex-col flex-shrink text-center w-1/2">
+													<p className="font-thin text-white text-opacity-50 pb-2">Avg Price</p>
+													<p className="font-bold cursor-pointer">
+														{prettyTruncate(
+															formatNearAmount(card.avg_price ? card.avg_price.split('.')[0] : '0'),
+															5
+														)}
+														Ⓝ{' '}
+													</p>
+												</div>
+												<div className="flex flex-col flex-shrink text-center w-1/2">
+													<p className="font-thin text-white text-opacity-50 pb-2">Volume</p>
+													<p className="font-bold cursor-pointer">
+														{formatNearAmount(card.volume ? card.volume : '0')} Ⓝ
+													</p>
+												</div>
+											</div>
+										)}
 									</div>
 								)
 							})}
