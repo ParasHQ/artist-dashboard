@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { useIntl } from 'hooks/useIntl'
 import Media from 'components/Media'
 
 const Card = ({
@@ -19,8 +18,6 @@ const Card = ({
 	const [dimension, setDimension] = useState({ width: 0, height: 0 })
 	const [rotate, setRotate] = useState(initialRotate)
 	const [isShowFront, setIsShowFront] = useState(true)
-
-	const { localeLn } = useIntl()
 
 	useEffect(() => {
 		function updateSize() {
@@ -102,7 +99,7 @@ const Card = ({
 			>
 				<div
 					onClick={onClick}
-					className="card-wrap"
+					className="card-wrap bg-black rounded"
 					onMouseMove={handleMouseMove}
 					onMouseLeave={handleMouseLeave}
 					ref={cardRef}
@@ -111,7 +108,7 @@ const Card = ({
 					}}
 				>
 					<div
-						className="card bg-transparent w-full h-full bg-black"
+						className="card w-full h-full bg-black"
 						style={{
 							fontSize: `${dimension.width / 14}px`,
 							transform: `rotateY(${rotate.x}deg) rotateX(${rotate.y}deg)`,
@@ -127,14 +124,8 @@ const Card = ({
 									{token.collection}
 								</p>
 							</div>
-							<div className="card-content my-2 relative flex flex-grow h-0">
-								<Media
-									className="mx-auto h-full object-contain relative z-10"
-									url={imgUrl}
-									videoControls={false}
-									videoMuted={true}
-									videoLoop={true}
-								/>
+							<div className="card-content my-2  flex flex-grow h-0">
+								<Media url={imgUrl} videoControls={false} videoMuted={true} videoLoop={true} />
 							</div>
 							<div className="px-2 mt-auto">
 								<div className="flex justify-between">
@@ -146,14 +137,14 @@ const Card = ({
 									<div className="w-1/2 text-right">
 										<p className="text-white" style={{ fontSize: `.6em` }}>
 											{token.edition_id
-												? `#${token.edition_id} of ${token.copies || localeLn('OpenEdition')}`
+												? `#${token.edition_id} of ${token.copies || 'Open Edition'}`
 												: token.copies
-												? `${localeLn('EditionOf')} ${token.copies}`
+												? `${'Edition Of'} ${token.copies}`
 												: (token.contract_id === process.env.NFT_CONTRACT_ID ||
 														process.env.WHITELIST_CONTRACT_ID.split(',').includes(
 															token.contract_id
 														)) &&
-												  localeLn('OpenEdition')}
+												  'Open Edition'}
 										</p>
 									</div>
 								</div>
@@ -192,7 +183,7 @@ const Card = ({
 									videoLoop={true}
 								/>
 							</div>
-							<div className="card-bg relative z-10">
+							<div className=" relative z-10">
 								<div
 									className="absolute inset-0 rounded-md z-20"
 									style={{ fontSize: `${dimension.width / 14}px`, padding: `.3em` }}

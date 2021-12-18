@@ -71,8 +71,8 @@ const Media = ({ className, url, videoControls = false, videoMuted = true, video
 
 	if (media?.type.includes('image')) {
 		return (
-			<div className={className}>
-				<img className="object-contain w-full h-full" src={media.url} />
+			<div className="mx-auto w-full flex flex-col relative z-10">
+				<img className="relative object-contain w-full" src={media.url} />
 			</div>
 		)
 	}
